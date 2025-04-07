@@ -2,7 +2,12 @@
 optimizinator: rba compiler picir 
 	python optimizer.py
 
-.PHONY: rba compiler picir
+.PHONY: rba compiler picir clone
+
+clone:
+	git clone https://github.com/dubya62/rule_based_automata.git
+	git clone https://github.com/dubya62/compiler.git
+	git clone https://github.com/TrishaCarter/PICIR.git
 
 rba:
 	git -C rule_based_automata pull

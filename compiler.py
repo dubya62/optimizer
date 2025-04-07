@@ -38,10 +38,8 @@ class Compiler:
         """
         Compile all input files
         """
-        result = []
         for file in self.input_files:
-            result.append(self.compile(file))
-        return result
+            self.compile(file)
     
 
     def compile(self, file):
@@ -57,7 +55,7 @@ class Compiler:
 
         dbg("++++++++++++++++++++++++++++++++++++++++++++++++++")
         dbg("Performing Preprocessing")
-        toks:Tokens = preprocessor.preprocess(toks)
+        toks:Tokens = preprocessor.preprocess(toks, include_dirs=self.include_dirs)
 
         dbg("++++++++++++++++++++++++++++++++++++++++++++++++++")
         dbg("Performing Simplification")
