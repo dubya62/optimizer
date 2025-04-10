@@ -20,5 +20,6 @@ picir:
 compiler:
 	git -C compiler pull
 	cp compiler/*.py .
+	cp -r compiler/testing .
 
 
