@@ -4,7 +4,7 @@ Integration
 
 import preprocessor
 import compiler
-import rba
+import rba_v2 as rba
 import decompiler
 
 if __name__ == "__main__":
@@ -23,6 +23,11 @@ if __name__ == "__main__":
     # run rba
     print(preprocessor.LIBRARY_LIBS)
     print(preprocessor.USER_LIBS)
+    parser = rba.Parser(["database.rbe"], -1, 0)
+    
+    for tok in result:
+        if tok == "#FUNC":
+            tok.value = parser.graph.execute(tok.value)
 
     # run decompiler
     """
