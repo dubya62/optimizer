@@ -1,6 +1,6 @@
 
 optimizinator: rba compiler picir 
-	python optimizer.py
+	python optimizer.py 10.c
 
 .PHONY: rba compiler picir clone
 
@@ -14,7 +14,7 @@ rba:
 	cp rule_based_automata/*.py .
 
 picir:
-	git -C PICIR pull
+	#git -C PICIR pull
 	cp PICIR/decompiler.py .
 
 compiler:

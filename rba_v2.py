@@ -28,33 +28,35 @@ class Graph:
     def __init__(self):
         self.head = Node()
 
-    def add_clause(self, clause:Clause):
+    def add_clause(self, clause:Clause, circular=False):
         """
         Add a clause object to the graph while handling circular rules
         """
-        print("Adding clause...")
-        # check if this creates a circular rule
+        print(f"Adding clause...: {clause.content} -> {clause.replacement}")
         
-        visited = set()  # to track visited nodes
-        check = clause.replacement  # start with the replacement clause
-        original = tuple(clause.content)  # original content of the clause
-        print(f"Checking for circular rule in clause: {clause.content}")
-        while check is not None:  # while there are replacements to check
-            rep_content = tuple(check.content)  # get the content of the replacement clause
-            print(f"Current replacement content: {rep_content}")
-            if rep_content == original:  # if the replacement content is the same as the original content, we have a circular rule
-                print(f"Detected circular rule for clause: {clause.content}")
-                # Do not add to graph
+        # add a new variable to function args: whether or not this is checking for circular rule: circular=False on first pass
+        if not circular and clause.replacement is not None: 
+            print(f"Checking circular: {clause.content} --- {clause.replacement.content}")
+            new_graph = Graph() # create a new graph 
+            
+            # create a copy of the original clause
+            new_clause = Clause()
+            new_clause.content = clause.content[:]
+            new_clause.replacement = Clause()
+            new_graph.add_clause(new_clause, circular=True)
+            replacement_made = new_graph.execute(clause.replacement.content, replace=False)
+            print("Replacement made:")
+            print(replacement_made)
+            
+            # if the execution ever made a replacement, stop execution
+            if replacement_made == True:
+                print(f"[Circular Check] Detected circular rule for clause: {clause.content}")
+                print(f"[Circular Check] Not adding clause to graph: {clause.content}")
+                # do not add to graph 
                 return
-
-            # prevents infinite loops
-            if rep_content in visited:
-                print(f"Already visited replacement content: {rep_content}, breaking loop")
-                break
-
-            print(f"Adding {rep_content} to visited set")
-            visited.add(rep_content)
-            check = check.replacement
+            
+            print("No Circular rule detected for this clause")
+        
 
         # add required nodes
         current_node = self.head
@@ -75,7 +77,7 @@ class Graph:
 
 
     # optimize the graph 
-    def execute(self, tokens:list[str]):
+    def execute(self, tokens:list[str], replace=True):
         """
         Execute the current graph on a list of strings
         Replaces matched token sequences with the replacement string 
@@ -124,6 +126,8 @@ class Graph:
                     # move the starting index to after the replacement's end 
                     i = i + len(replacement)
                     modified = True 
+                    if not replace:
+                        return True
                     
                 else: 
                     print("No replacement found, moving to next token")
@@ -133,6 +137,9 @@ class Graph:
             if not modified:
                 print("No modifications made in this pass, exiting")
                 break
+
+        if not replace:
+            return False
             
         return tokens
 
@@ -226,10 +233,10 @@ class Parser:
                         best = current_rule[0]
                         for clause in current_rule:
                             if self.direction > 0:
-                                if clause.metric < best.metric:
+                                if clause.metric > best.metric:
                                     best = clause
                             else:
-                                if clause.metric > best.metric:
+                                if clause.metric < best.metric:
                                     best = clause
 
                         for clause in current_rule:
@@ -267,14 +274,17 @@ class Parser:
 if __name__ == "__main__":
     parser = Parser(["test.rbe"], -1, 0)   
     # test the graph 
+    print("\nTesting graph...")
     tokens = ["a", "b", "c", "d", "e"]
     print("Tokens before execution: ", tokens) 
     result = parser.graph.execute(tokens)
     print("Tokens after execution: ", result)
     
     # test the circular rule 
+    print("\nChecking for circular rule...")
     circular_rule = Clause()
     circular_rule.content = ["a", "b", "c"]
     circular_rule.replacement = circular_rule 
     parser.graph.add_clause(circular_rule)
-    print("\n   Tokens after adding circular rule: ", result)
+    print("Tokens after adding circular rule: ", result)
+

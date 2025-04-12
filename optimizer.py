@@ -28,11 +28,14 @@ if __name__ == "__main__":
     for tok in result:
         if tok == "#FUNC":
             tok.value = parser.graph.execute(tok.value)
+    print("Decompiling:")
+    print(result)
 
     # run decompiler
-    """
     decomp = decompiler.IRToCDecompiler()
-    decomp.generate_c_code()
-    """
+    final_result = decomp.generate_c_code(result, list(preprocessor.LIBRARY_LIBS) + list(preprocessor.USER_LIBS))
 
-    pass
+    print("------------------------------")
+    print("Final result:")
+    print(final_result)
+
