@@ -11,6 +11,11 @@ int add(int a, int b){
 int main(int argc, char** argv){
     struct TestStruct test;
 
+    while (1){
+        break;
+    }
+
+
     test.a = 2;
 
     int c = add(2, 3);
