@@ -86,13 +86,13 @@ class IRToCDecompiler:
                         new_tokens.append("]")
                         continues = 1
                         continue
-                    elif tok == "call":
+                    elif tok == "#FUNCCALL":
                         # handle call
-                        new_tokens.append("(")
-                        new_tokens.append("var" + tokens[i].value[j+1][1:])
-                        new_tokens.append(")")
-                        continues = 1
-                        continue
+                        tok.value[0] = tok.value[0].original
+                        for j in range(1, len(tok.value)):
+                            if TOKEN_VARIABLE() == tok.value[j]:
+                                tok.value[j] = "var" + tok.value[j][1:]
+                        new_tokens += tok.value
                     else:
                         new_tokens.append(tok)
                         
