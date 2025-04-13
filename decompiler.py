@@ -38,7 +38,11 @@ class IRToCDecompiler:
         i = 0
         n = len(tokens)
         while i < n:
-            if tokens[i] in ["#STRUCT", "#UNION", "#ENUM"]:
+            if tokens[i] == "#TYPEHANDLER":
+                print("TYPEHANDLER:")
+                print(tokens[i].value)
+                new_tokens += tokens[i].value
+            elif tokens[i] in ["#STRUCT", "#UNION", "#ENUM"]:
                 new_tokens += [str(tokens[i])[1:].lower()] 
                 if tokens[i].name is not None:
                     new_tokens.append(tokens[i].name)
@@ -76,8 +80,7 @@ class IRToCDecompiler:
                     elif TOKEN_VARIABLE() == tok:
                         if tok not in used_already:
                             # TODO: fix this to use actual type
-                            if hasattr(tok, "type"):
-                                new_tokens += get_type([tok.type])
+                            new_tokens.append("int")
                         used_already.add(tok)
                         new_tokens.append("var" + tok[1:])
                     elif tok == "access":
