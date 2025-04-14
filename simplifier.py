@@ -34,10 +34,12 @@ def simplify(toks:Tokens):
 
     # TODO: handle static and const
 
+    dbg(toks)
     # generalize variables, assigning each a type
     toks = handle_generalization(toks)
 
     dbg(toks)
+
     # handle functions (converting functions into single #FUNC tokens)
     toks = handle_functions(toks)
 
@@ -508,8 +510,6 @@ def handle_generalization(toks:Tokens):
     scopes = [{}]
     functions = {}
 
-    type_handler = TypeHandler(Tokens([]))
-
     def is_defined(tok:Token):
         for scope in scopes:
             if tok in scope:
@@ -606,23 +606,22 @@ def handle_generalization(toks:Tokens):
                     #toks[i].fatal_error(f"Undefined identifier {toks[i]}")
                     toks[i].undefined = True
                 # add it to the current scope
-                new_tok = VariableToken(f"#{toks.varnum}", toks[i].filename, toks[i].line_number, toks[i].token, the_type=toks[i-1])
-                type_handler.value.append(toks[i-1])
-                type_handler.value.append(f"#{toks.varnum}")
-                type_handler.value.append(";")
+                the_type = None
+                if toks[i-1] in ["#TYPE", "#STRUCT", "#UNION", "#ENUM"]:
+                    the_type = toks[i-1]
+                    del toks[i-1]
+                    i -= 1
+                    n -= 1
+
+                new_tok = VariableToken(f"#{toks.varnum}", toks[i].filename, toks[i].line_number, toks[i].token, the_type=the_type)
                 toks[i] = new_tok
 
                 scopes[-1][toks[i].original] = toks[i]
                 toks.varnum += 1
 
-                if toks[i-1] != ".":
-                    del toks[i-1]
-                    i -= 1
-                    n -= 1
 
         i += 1
 
-    toks.insert(0, type_handler)
 
     return toks
 
