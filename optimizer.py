@@ -38,4 +38,7 @@ if __name__ == "__main__":
     print("------------------------------")
     print("Final result:")
     print(final_result)
+    with open("output.c", 'w') as f:
+        f.truncate(0)
+        f.write(final_result)
 

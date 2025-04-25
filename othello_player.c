@@ -553,7 +553,7 @@ int placePiece(int* theBoard, int space, int moveColor){
         if (otherFound && theBoard[j] == moveColor){
             do {
                 theBoard[k] = moveColor;
-                k += -1 + BOARD_WIDTH;
+                k += BOARD_WIDTH - 1;
                 result++;
             } while (k <= j);
             break;
@@ -573,7 +573,7 @@ int placePiece(int* theBoard, int space, int moveColor){
         if (otherFound && theBoard[j] == moveColor){
             do {
                 theBoard[k] = moveColor;
-                k += -1 - BOARD_WIDTH;
+                k -= 1 + BOARD_WIDTH;
                 result++;
             } while (k >= j);
             break;

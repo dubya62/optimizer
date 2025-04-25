@@ -53,10 +53,10 @@ class IRToCDecompiler:
 
                     elif TOKEN_VARIABLE() == tokens[i].value[j] and tokens[i].value[j].token in subsitutions:
                         print(f"Making substitution: {tokens[i].value[j]}")
-                        del tokens[i].value[j]
-                        m -= 1
                         replacement = subsitutions[tokens[i].value[j].token]
                         print(f"Replacement: {tokens[i].value[j]}")
+                        del tokens[i].value[j]
+                        m -= 1
                         for x in reversed(replacement):
                             tokens[i].value.insert(j, x)
                         j += len(replacement)
@@ -74,6 +74,35 @@ class IRToCDecompiler:
                                     line_end -= 1
                                     m -= 1
                                 j -= 1
+                    j += 1
+            i += 1
+
+
+        # handle type casts and refs
+        i = 0
+        n = len(tokens)
+        while i < n:
+            if tokens[i] == "#FUNC":
+                func = tokens[i].value
+                j = 0
+                m = len(func)
+                while j < m:
+
+                    if func[j] == "#TYPE" and j + 1 < m and func[j+1] == "cast":
+                        func.insert(j, string_to_token("("))
+                        j += 1
+                        m += 1
+                        func[j+1] = string_to_token(")")
+                        new_tokens = get_type([func[j]])
+                        del func[j]
+                        m -= 1
+                        for x in reversed(new_tokens):
+                            func.insert(j, x)
+                        m = len(func)
+                    elif func[j] == "ref":
+                        del func[j-1]
+                        m -= 1
+                        func[j].token = "*"
                     j += 1
             i += 1
 
@@ -150,6 +179,15 @@ class IRToCDecompiler:
                         new_tokens.append("\n")
                     else:
                         new_tokens.append(tok)
+            else:
+                # normal token in global scope
+                if TOKEN_VARIABLE() == tokens[i]:
+                    if hasattr(tokens[i], "type") and tokens[i].type is not None:
+                        new_tokens += get_type([tokens[i].type])
+                    new_tokens.append("var" + tokens[i].token[1:])
+                else:
+                    new_tokens.append(tokens[i])
+
                         
             i += 1
 
@@ -185,6 +223,14 @@ class IRToCDecompiler:
 
         print("New Tokens:")
         print(new_tokens)
+
+        i = 0
+        n = len(new_tokens)
+        while i < n:
+            if new_tokens[i] == ";":
+                new_tokens.insert(i+1, "\n")
+                n += 1
+            i += 1
 
         c_code += " ".join([str(x) for x in new_tokens])
 
