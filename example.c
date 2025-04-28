@@ -11,11 +11,26 @@ long gcd(long a, long b){
     return gcd(b % a, a);
 }
 
+/*
 int isrelprime(long x, long y) {
     return gcd(x, y) == 1;
 }
+*/
+int isrelprime(long x, long y) {
+    long a = x;
+    long b = y;
+    long temp;
+    while (a != 0){
+        temp = a;
+        a = b % a;
+        b = temp;
+    }
+    return b == 1;
+}
+
 
 // slow
+/*
 long slowPhi(long largeNum, long* primeFactors, long n_primeFactors){
     long result = 0;
     for (long i=1; i<largeNum; i++){
@@ -25,8 +40,27 @@ long slowPhi(long largeNum, long* primeFactors, long n_primeFactors){
     }
     return result;
 }
+*/
+long slowPhi(long largeNum, long* primeFactors, long n_primeFactors){
+    long result = 0;
+    for (long i=1; i<largeNum; i++){
+        long a = i;
+        long b = largeNum;
+        long temp;
+        while (a != 0){
+            temp = a;
+            a = b % a;
+            b = temp;
+        }
+        if (b == 1){
+            result++;
+        }
+    }
+    return result;
+}
 
 // fast
+/*
 long fastPhi(long largeNum, long* primeFactors, long n_primeFactors){
     long result = 1;
     long lastNum = 1;
@@ -49,12 +83,59 @@ long fastPhi(long largeNum, long* primeFactors, long n_primeFactors){
 
     return result;
 }
+*/
+// fast
+long fastPhi(long largeNum, long* primeFactors, long n_primeFactors){
+    long result = 1;
+    long lastNum = 1;
+    long currentFactor = 1;
+    for (long i=0; i<n_primeFactors; i++){
+        if (primeFactors[i] != lastNum && lastNum != 1){
+            long res = 0;
+            for (long j=1; j<currentFactor; j++){
+                long a = j;
+                long b = currentFactor;
+                long temp;
+                while (a != 0){
+                    temp = a;
+                    a = b % a;
+                    b = temp;
+                }
+                if (b == 1){
+                    res++;
+                }
+            }
+            result *= res;
+            currentFactor = primeFactors[i];
+        } else {
+            currentFactor *= primeFactors[i];
+        }
+        lastNum = primeFactors[i];
+    }
+    long res = 0;
+    for (long j=1; j<currentFactor; j++){
+        long a = j;
+        long b = currentFactor;
+        long temp;
+        while (a != 0){
+            temp = a;
+            a = b % a;
+            b = temp;
+        }
+        if (b == 1){
+            res++;
+        }
+    }
+    result *= res;
+
+    return result;
+}
 
 
 
 int main(int argc, char** argv){
-    long factors[] = {2, 2, 3, 5, 7, 19, 17, 23, 109};
-    long n_factors = 9;
+    long factors[] = {2, 2, 3, 5, 7, 109};
+    long n_factors = 6;
     long largeNum = 1;
     for (long i=0; i<n_factors; i++){
         largeNum *= factors[i];
@@ -68,9 +149,9 @@ int main(int argc, char** argv){
     long result2 = slowPhi(largeNum, factors, n_factors);
     clock_t end2 = clock();
 
-    printf("slow %ld: %ld\n", largeNum, result2);
+    printf("fast %ld: %ld\n", largeNum, result2);
     printf("Time spent: %lf\n", (double)(end1-begin1)/CLOCKS_PER_SEC);
-    printf("fast %ld: %ld\n", largeNum, result);
+    printf("slow %ld: %ld\n", largeNum, result);
     printf("Time spent: %lf\n", (double)(end2-begin2)/CLOCKS_PER_SEC);
 
 }
