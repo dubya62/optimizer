@@ -830,7 +830,7 @@ def convert_logical_and(toks:Tokens):
         n = len(func)
         while i < n:
             if func[i] == "&&":
-                new_var = VariableToken(f"#{toks.varnum}", "", 0, string_to_token(""), string_to_token(""))
+                new_var = VariableToken(f"#{toks.varnum}", "", 0, string_to_token(""), TypeToken(Token("#TYPE", "", 0), "", 0, [string_to_token("long")]))
                 before = [new_var, "=", "0", ";", "if", "("]
                 middle = [")", "{", "if", "("]
                 after = [")", "{", new_var, "=", "1", ";", "}", "else", "{", "}", "}", "else", "{", "}"]
@@ -991,7 +991,7 @@ def remove_lognot(toks:Tokens):
         n = len(func)
         while i < n:
             if func[i] == "lognot":
-                new_var = VariableToken(f"#{toks.varnum}", "", 0, string_to_token(""), string_to_token(""))
+                new_var = VariableToken(f"#{toks.varnum}", "", 0, string_to_token(""), TypeToken("#TYPE", "", 0, [Token("long", "", 0)]))
                 original = func[i+1]
                 insertion = [new_var, "=", "0", ";", "if", "(", original, ")", "{", new_var, "=", "1", ";", "}", "else", "{", "}"]
 

@@ -5,7 +5,6 @@ from tokens import *
 
 def get_type(toks:list[Token]):
     result = []
-    print(f"GETTYPE: {toks}")
 
     for tok in toks:
         if tok == "#TYPE":
@@ -18,10 +17,31 @@ def get_type(toks:list[Token]):
     return result
 
 
+def handle_multiple_set(tokens):
+    # handle x = y = z => y = z; x = y
+    print("Handling...")
+    i = 0
+    n = len(tokens)
+    while i < n:
+        if i + 4 < n and TOKEN_VARIABLE() == tokens[i] and TOKEN_VARIABLE() == tokens[i+2] and TOKEN_VARIABLE() == tokens[i+4] and tokens[i+1] == "=" and tokens[i+3] == "=":
+            print("found")
+            new_stuff = tokens[i:i+3]
+            del tokens[i]
+            del tokens[i]
+            i += 3
+            tokens.insert(i, string_to_token(";"))
+            i += 1
+            tokens.insert_all(i, new_stuff)
+            n = len(tokens)
+        elif tokens[i] == "#FUNC":
+            tokens[i].value = handle_multiple_set(tokens[i].value)
+        i += 1
+    return tokens
 
 class IRToCDecompiler:
     def __init__(self):
         pass
+
 
     # generate the full C code
     def generate_c_code(self, tokens, libraries):
@@ -29,53 +49,10 @@ class IRToCDecompiler:
         for lib in libraries:
             c_code += f"#include \"{lib}\"\n"
 
-        # handle tokens that have no type
-        subsitutions = {}
-        i = 0
-        n = len(tokens)
-        while i < n:
-            if tokens[i] == "#FUNC":
-                j = 0
-                m = len(tokens[i].value)
-                while j < m:
-                    # if this is a variable without a type,
-                    # substitute its value wherever it appears
-                    print(tokens[i].value[j], subsitutions)
-                    if tokens[i].value[j] == "#FUNCCALL":
-                        k = 0
-                        while k < len(tokens[i].value[j].value):
-                            if tokens[i].value[j].value[k] in subsitutions:
-                                replacement = subsitutions[tokens[i].value[j].value[k]]
-                                del tokens[i].value[j].value[k]
-                                for x in reversed(replacement):
-                                    tokens[i].value[j].value.insert(k, x)
-                            k += 1
+        tokens = handle_multiple_set(tokens)
 
-                    elif TOKEN_VARIABLE() == tokens[i].value[j] and tokens[i].value[j].token in subsitutions:
-                        print(f"Making substitution: {tokens[i].value[j]}")
-                        replacement = subsitutions[tokens[i].value[j].token]
-                        print(f"Replacement: {tokens[i].value[j]}")
-                        del tokens[i].value[j]
-                        m -= 1
-                        for x in reversed(replacement):
-                            tokens[i].value.insert(j, x)
-                        j += len(replacement)
-                        m += len(replacement)
-                        continue
-                    elif TOKEN_VARIABLE() == tokens[i].value[j]:
-                        if not hasattr(tokens[i].value[j], "type") or tokens[i].value[j].type is None:
-                            if j > 0 and j + 1 < m and tokens[i].value[j-1] != "." and tokens[i].value[j+1] == "=":
-                                line_end = Tokens(tokens[i].value).get_line_end(j+1)
-                                the_value = tokens[i].value[j+2:line_end]
-                                subsitutions[tokens[i].value[j].token] = the_value
-                                print(f"New Sub: {tokens[i].value[j].token} -> {the_value}")
-                                while line_end >= j:
-                                    del tokens[i].value[j]
-                                    line_end -= 1
-                                    m -= 1
-                                j -= 1
-                    j += 1
-            i += 1
+        print("After multiple sets")
+        print(tokens)
 
 
         # handle type casts and refs
@@ -155,6 +132,9 @@ class IRToCDecompiler:
                         if tok not in used_already:
                             if hasattr(tok, "type") and tok.type is not None:
                                 new_tokens += get_type([tok.type])
+                            else: 
+                                print("NO TYPE")
+                                new_tokens.append(string_to_token("long"))
                         used_already.add(tok)
                         new_tokens.append("var" + tok[1:])
                     elif tok == "access":
@@ -220,6 +200,54 @@ class IRToCDecompiler:
 
                 continue
             i -= 1
+
+        # handle tokens that have no type
+        subsitutions = {}
+        i = 0
+        n = len(tokens)
+        while i < n:
+            if tokens[i] == "#FUNC":
+                j = 0
+                m = len(tokens[i].value)
+                while j < m:
+                    # if this is a variable without a type,
+                    # substitute its value wherever it appears
+                    if tokens[i].value[j] == "#FUNCCALL":
+                        k = 0
+                        while k < len(tokens[i].value[j].value):
+                            if tokens[i].value[j].value[k] in subsitutions:
+                                replacement = subsitutions[tokens[i].value[j].value[k]]
+                                del tokens[i].value[j].value[k]
+                                for x in reversed(replacement):
+                                    tokens[i].value[j].value.insert(k, x)
+                            k += 1
+
+                    elif TOKEN_VARIABLE() == tokens[i].value[j] and tokens[i].value[j].token in subsitutions:
+                        print(f"Making substitution: {tokens[i].value[j]}")
+                        replacement = subsitutions[tokens[i].value[j].token]
+                        print(f"Replacement: {tokens[i].value[j]}")
+                        del tokens[i].value[j]
+                        m -= 1
+                        for x in reversed(replacement):
+                            tokens[i].value.insert(j, x)
+                        j += len(replacement)
+                        m += len(replacement)
+                        continue
+                    elif TOKEN_VARIABLE() == tokens[i].value[j]:
+                        if not hasattr(tokens[i].value[j], "type") or tokens[i].value[j].type is None or len(tokens[i].value[j].type) == 0:
+                            if j > 0 and j + 1 < m and tokens[i].value[j-1] != "." and tokens[i].value[j+1] == "=":
+                                line_end = Tokens(tokens[i].value).get_line_end(j+1)
+                                the_value = tokens[i].value[j+2:line_end]
+                                subsitutions[tokens[i].value[j].token] = the_value
+                                print(f"New Sub: {tokens[i].value[j].token} -> {the_value}")
+                                while line_end >= j:
+                                    del tokens[i].value[j]
+                                    line_end -= 1
+                                    m -= 1
+                                j -= 1
+                    j += 1
+            i += 1
+
 
         print("New Tokens:")
         print(new_tokens)
