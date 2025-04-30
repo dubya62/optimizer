@@ -6,9 +6,12 @@ long slowPhi ( long var1 , long * var2 , long var3 ) { long var4 = 0 ;
  long var7 = var1 ; 
  long var8 ; 
  label_2: 
- long var16 = 0 ; 
- if ( var6 == 0 ) { var16 = 1 ; 
- } else { } int var11 = var16 ; 
+ long var13 = var6 == 0 ; 
+ long var16 = 1 ; 
+ if ( var13 ) { var16 = 0 ; 
+ } else { } long var14 = var16 ; 
+ int var11 = var14 ; 
+ long var15 = var11 ; 
  if ( var11 ) { var8 = var6 ; 
  var6 = var7 % var6 ; 
  var7 = var8 ; 

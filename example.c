@@ -1,7 +1,7 @@
 // Given a large number and an array of its prime factors, 
 // find the number of prime numbers less than that number
 
-#include <stdio.h>
+#include <stdio.h> 
 #include <time.h>
 
 long gcd(long a, long b){
