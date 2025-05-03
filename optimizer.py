@@ -23,11 +23,13 @@ if __name__ == "__main__":
     # run rba
     print(preprocessor.LIBRARY_LIBS)
     print(preprocessor.USER_LIBS)
-    parser = rba.Parser(["database.rbe"], -1, 0)
+    parser = rba.Parser(["database.rbe"], -1, 2)
+
+    print(f"result varnum: {result.varnum}")
     
     for tok in result:
         if tok == "#FUNC":
-            tok.value = parser.graph.execute(tok.value)
+            tok.value, result.varnum = parser.graph.execute(tok.value, True, result.varnum)
     print("Decompiling:")
     print(result)
 
