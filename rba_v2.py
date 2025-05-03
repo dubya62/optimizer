@@ -1,5 +1,6 @@
 
 import math
+import tokens
 
 
 class Clause:
@@ -260,6 +261,23 @@ class Parser:
 
             i += 1
 
+        for clause in all_clauses:
+            for i in range(len(clause.content)):
+                if "#" in clause.content[i]:
+                    if "(" in clause.content[i]:
+                        typeval = ""
+                        paren_index = clause.content[i].index("(")
+                        type_toks = clause.content[i][paren_index+1:]
+                        clause.content[i] = clause.content[i][:paren_index]
+                        for tok in type_toks:
+                            typeval += tok
+                    else:
+                        typeval = ""
+                    new_token = tokens.VariableToken(clause.content[i], "", 0, "vartoken", tokens.TypeToken(tokens.Token("#TYPE", "", 0), "", 0, [tokens.Token(f"{typeval}", "", 0)]))
+                else:
+                    new_token = tokens.Token(clause.content[i], "", 0)
+                clause.content[i] = new_token
+
         print(all_clauses)
         for clause in all_clauses:
             print(clause.content)
@@ -272,10 +290,10 @@ class Parser:
 
 
 if __name__ == "__main__":
-    parser = Parser(["test.rbe"], -1, 0)   
+    parser = Parser(["c.rbe"], -1, 2)
     # test the graph 
     print("\nTesting graph...")
-    tokens = ["a", "b", "c", "d", "e"]
+    tokens = ["a", "b", "c", "d", "e", "chill", "guy"]
     print("Tokens before execution: ", tokens) 
     result = parser.graph.execute(tokens)
     print("Tokens after execution: ", result)
